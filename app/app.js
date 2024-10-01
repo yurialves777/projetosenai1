@@ -43,5 +43,51 @@ app.get('/usuario/:id', (req, res) => {
     res.send(row)
   })
 })
+app.get('/tasks/:id', (req, res) => {
+  const parametro = req.params.id
+  db.query(`SELECT * FROM tasks WHERE id = ?`, parametro, (err, rows) => {
+    if (err) {
+      console.log('Error: ' + err)
+      return
+    }
+    res.send(rows)
+  })
+})
+app.get('/tasks', (req, res) => {
+  db.query('SELECT * FROM tasks', (err, rows) => {
+    if (err) {
+      console.log('Error: ' + err)
+      return
+    }
+    res.send(rows)
+  })
+})
+app.post('/tasks', (req, res) => {
+
+//pegar os dados o usuario enviar (req )
+var dados = req.body
+
+
+
+
+
+
+
+
+
+//salvar no banco de dados 
+
+
+
+
+
+  db.query(`insert into tasks (titulo, descricao, status) values (${dados.titulo}, ${dados.descricao}, ${dados.status})`, (err, rows) => {
+    if (err) {
+      console.log('Error: ' + err)
+      return
+    }
+    res.send(rows)
+  })
+})
 
 

@@ -1,33 +1,26 @@
-var sqlite3 = require('sqlite3').verbose()
-const db = new sqlite3.Database("db.sqlite", (err) => {
-  if (err) {
-    console.error('Erro ao conectar ao banco de dados', err.message);
-    return;
-  }
-  console.log('Banco de dados conectado');
+const mysql = require('mysql2')
 
-  db.run(`CREATE TABLE IF NOT EXISTS user (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name VARCHAR(50),
-    email VARCHAR(50),
-    password VARCHAR(50)
-  )`, (error) => {
-    if (error) {
-      console.error('Erro ao criar tabela', error.message);
-      return;
-    }
-    console.log('Tabela criada com sucesso');
-    var insertQuery = "INSERT INTO user (name, email, password) VALUES (?,?,?)";
-    db.run(insertQuery, ["usuario1", "usuario1@email.com", "123456"], function(err) {
-      if (err) {
-        console.error('Erro ao inserir usuario1', err.message);
-      }
-    });
-    db.run(insertQuery, ["admin", "admin@email.com", "123456"], function(err) {
-      if (err) {
-        console.error('Erro ao inserir admin', err.message);
-      }
-    });
-  });
-});
-module.exports = db
+const pool = mysql.createPool({
+  host: '',
+  user: '',
+  password: '',
+  database: '',
+  waitForConnections: true,   // Espera por conexões disponíveis
+  connectionLimit: 10,        // Limite máximo de conexões no pool
+  queueLimit: 0               // Número máximo de conexões em espera (0 = ilimitado)
+})
+
+pool.getConnection((err, connection) => {
+  if (err) {
+    console.error('Error connecting: ' + err.stack)
+    return
+  }
+  console.log('Connected as id ' + connection.threadId)
+
+  // Libera a conexão de volta para o pool após o uso
+  connection.release()
+})
+
+module.exports = pool
+
+
