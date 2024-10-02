@@ -63,25 +63,42 @@ app.get('/tasks', (req, res) => {
   })
 })
 app.post('/tasks', (req, res) => {
-
-//pegar os dados o usuario enviar (req )
-var dados = req.body
-
-
-
-
-
-
-
-
-
-//salvar no banco de dados 
-
-
-
-
-
-  db.query(`insert into tasks (titulo, descricao, status) values (${dados.titulo}, ${dados.descricao}, ${dados.status})`, (err, rows) => {
+  //pegar os dados o usuario enviar (req )
+  var dados = req.body
+  //salvar no banco de dados 
+  db.query(`insert into tasks (titulo, descricao, status) values ('${dados.titulo}', '${dados.descricao}', '${dados.status}')`, (err, rows) => {
+    if (err) {
+      console.log('Error: ' + err)
+      return
+    }
+    db.query('SELECT * FROM tasks WHERE id ='+ rows.insertId,(err, rows) => {
+      if (err) {
+        console.log('Error: ' + err)
+        return
+      }
+      res.send(rows)
+    })
+  })
+})
+// Atualizar 
+app.put('/tasks/:id', (req, res) => {
+  const parametro = req.params.id
+  console.log(req.body)
+  var titulo = req.body.titulo
+  var descricao = req.body.descricao
+  var status = req.body.status
+  db.query(`UPDATE tasks set titulo = '${titulo}', descricao = '${descricao}', status =  '${status}' WHERE id =`+parametro,(err, rows) => {
+    if (err) {
+      console.log('Error: ' + err)
+      return
+    }
+    res.send(rows)  
+  })
+})
+// Delete 
+app.delete('/tasks/:id',(req, res) => {
+  const parametro = req.params.id
+  db.query(`DELETE FROM tasks WHERE id = '${parametro}'`,(err, rows) => {
     if (err) {
       console.log('Error: ' + err)
       return
@@ -89,5 +106,3 @@ var dados = req.body
     res.send(rows)
   })
 })
-
-
