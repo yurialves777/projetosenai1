@@ -1,108 +1,61 @@
-const express = require('express')
-const app = express()
-const port = 8080
-const path = require('path');
-const db = require('../database')
+// Carregar as variáveis de ambiente
+require('dotenv').config();
 
-// Middleware para habilitar o parsing de JSON no body
+const express = require('express');
+const pool = require('../database'); // Importa a conexão com o banco de dados
+const path = require('path');
+const app = express();
+const port = 8080;
+
+// Middleware para analisar JSON no corpo das requisições
 app.use(express.json());
 
-// Serve the 'index.html' file from the root
+// Middleware para servir arquivos estáticos (ex: index.html)
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Serve o arquivo 'index.html' quando a rota '/api-tester' for acessada
 app.get('/api-tester', (req, res) => {
-  res.sendFile(path.join(__dirname, 'publico/index.html'));
+  res.sendFile(path.join(__dirname, 'public/index.html'));
 });
 
-app.get('/', (req, res) => {
-  res.send('Funcionou essa p****!')
-})
-
-//Cole sua rota POST aqui
-app.post('/dados', (req, res) => {
-    const dados = req.body; // Acessa os dados enviados no corpo da requisição
-    res.send(`Dados recebidos: ${JSON.stringify(dados)}`);
+// Rota para obter todos os usuários
+app.get('/users', (req, res) => {
+  pool.query('SELECT * FROM users', (err, results) => {
+    if (err) {
+      console.error('Erro: ', err);
+      return res.status(500).send('Erro ao buscar usuários');
+    }
+    res.json(results); // Retorna a lista de usuários como JSON
+  });
 });
-app.post('/', (req, res) => {
-    console.log('Dados recebidos no body:', req.body);
-    res.json({ message: 'Dados recebidos com sucesso!', body: req.body });
-})
 
+// Rota para criar um novo usuário
+app.post('/users', (req, res) => {
+  // O nome será sempre "yuri"
+  const nome = 'yuri';
+
+  // Inserir novo usuário no banco de dados
+  const sql = 'INSERT INTO users (nome) VALUES (?)';
+  pool.query(sql, [nome], (err, result) => {
+    if (err) {
+      console.error('Erro ao criar usuário:', err);
+      return res.status(500).json({ error: 'Erro ao criar usuário.' });
+    }
+
+    // Retornar o novo usuário criado
+    const newUser = {
+      id: result.insertId, // ID gerado automaticamente
+      nome, // Retorna "yuri" como nome
+    };
+
+    res.status(201).json(newUser); // Retorna o usuário criado com status 201
+  });
+});
+
+// Iniciar o servidor
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
-// app.get('/usuario/:id', (req, res, next) => {
-//   res.send(req.params.id)
-//   db.all()
-// })
-app.get('/usuario/:id', (req, res) => {
-	parametro = req.params.id
-  db.get("SELECT * FROM user WHERE id = ?", parametro, (error, row) => {
-  	if(error) {
-    	res.json(error)
-      return
-    }
-    res.send(row)
-  })
-})
-app.get('/tasks/:id', (req, res) => {
-  const parametro = req.params.id
-  db.query(`SELECT * FROM tasks WHERE id = ?`, parametro, (err, rows) => {
-    if (err) {
-      console.log('Error: ' + err)
-      return
-    }
-    res.send(rows)
-  })
-})
-app.get('/tasks', (req, res) => {
-  db.query('SELECT * FROM tasks', (err, rows) => {
-    if (err) {
-      console.log('Error: ' + err)
-      return
-    }
-    res.send(rows)
-  })
-})
-app.post('/tasks', (req, res) => {
-  //pegar os dados o usuario enviar (req )
-  var dados = req.body
-  //salvar no banco de dados 
-  db.query(`insert into tasks (titulo, descricao, status) values ('${dados.titulo}', '${dados.descricao}', '${dados.status}')`, (err, rows) => {
-    if (err) {
-      console.log('Error: ' + err)
-      return
-    }
-    db.query('SELECT * FROM tasks WHERE id ='+ rows.insertId,(err, rows) => {
-      if (err) {
-        console.log('Error: ' + err)
-        return
-      }
-      res.send(rows)
-    })
-  })
-})
-// Atualizar 
-app.put('/tasks/:id', (req, res) => {
-  const parametro = req.params.id
-  console.log(req.body)
-  var titulo = req.body.titulo
-  var descricao = req.body.descricao
-  var status = req.body.status
-  db.query(`UPDATE tasks set titulo = '${titulo}', descricao = '${descricao}', status =  '${status}' WHERE id =`+parametro,(err, rows) => {
-    if (err) {
-      console.log('Error: ' + err)
-      return
-    }
-    res.send(rows)  
-  })
-})
-// Delete 
-app.delete('/tasks/:id',(req, res) => {
-  const parametro = req.params.id
-  db.query(`DELETE FROM tasks WHERE id = '${parametro}'`,(err, rows) => {
-    if (err) {
-      console.log('Error: ' + err)
-      return
-    }
-    res.send(rows)
-  })
-})
+  console.log(`Servidor rodando em http://localhost:${port}`);
+});
+
+
+
