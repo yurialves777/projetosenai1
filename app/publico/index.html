@@ -12,11 +12,15 @@
             const title = document.getElementById('title').value;
             const description = document.getElementById('description').value;
             const status = document.getElementById('status').value;
+            const userId = document.getElementById('userId').value;
+            const userName = document.getElementById('userName').value;
             
             const jsonData = {
                 titulo: title,
                 descricao: description,
-                status: status
+                status: status,
+                id_usuario: userId,
+                nome_usuario: userName
             };
             
             return JSON.stringify(jsonData);
@@ -24,22 +28,19 @@
 
         // Função para enviar a requisição
         function sendRequest() {
-            // Pega os valores dos campos de entrada
             const url = document.getElementById('url').value;
             const method = document.getElementById('method').value;
             const jsonData = constructJson();
 
-            // Faz a requisição HTTP
             fetch(url, {
                 method: method,
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: method === 'GET' || method === 'DELETE' ? null : jsonData  // Para GET e DELETE não é necessário corpo
+                body: method === 'GET' || method === 'DELETE' ? null : jsonData
             })
-            .then(response => response.json())  // Converte a resposta em JSON
+            .then(response => response.json())
             .then(data => {
-                // Exibe a resposta no console (ou pode ser exibida no próprio HTML)
                 console.log('Success:', data);
                 document.getElementById('response').textContent = JSON.stringify(data, null, 2);
             })
@@ -80,6 +81,16 @@
             <div class="card-body">
                 <h5 class="card-title">Dados JSON</h5>
                 <div class="mb-3">
+                    <label for="userId" class="form-label">ID do Usuário:</label>
+                    <input type="text" class="form-control" id="userId" placeholder="Digite o ID do usuário">
+                </div>
+
+                <div class="mb-3">
+                    <label for="userName" class="form-label">Nome do Usuário:</label>
+                    <input type="text" class="form-control" id="userName" placeholder="Digite o nome do usuário">
+                </div>
+
+                <div class="mb-3">
                     <label for="title" class="form-label">Título:</label>
                     <input type="text" class="form-control" id="title" placeholder="Digite o título">
                 </div>
@@ -118,3 +129,4 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+

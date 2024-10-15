@@ -15,7 +15,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Serve o arquivo 'index.html' quando a rota '/api-tester' for acessada
 app.get('/api-tester', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/index.html'));
+  res.sendFile(path.join(__dirname, 'publico/index.html'));
 });
 
 // Rota para obter todos os usuários
@@ -42,6 +42,8 @@ app.post('/users', (req, res) => {
       return res.status(500).json({ error: 'Erro ao criar usuário.' });
     }
 
+    console.log('passou aqui', err);
+
     // Retornar o novo usuário criado
     const newUser = {
       id: result.insertId, // ID gerado automaticamente
@@ -58,4 +60,37 @@ app.listen(port, () => {
 });
 
 
+app.put('/users/:id', (req, res) => {
+  console.log('Requisição PUT recebida para ID:', req.params.id); // Adicione este log
+  const nome = req.body.nome_usuario;
+console.log(nome)
+  const query = 'UPDATE users SET nome = ? WHERE id = ?';
+  pool.query(query, [nome, req.params.id], (err, result) => {
+    if (err) {
+      console.error('Error: ', err);
+      return res.status(500).json({ error: 'Erro ao atualizar o usuário.' });
+    }
+
+    res.json({ message: 'Usuário atualizado com sucesso!', id_usuario: req.params.id });
+  });
+});
+
+// Rota para deletar usuários
+app.delete('/users/:id', (req, res) => {
+  console.log('Requisição DELETE recebida para ID:', req.params.id);
+  
+  const query = 'DELETE FROM users WHERE id = ?';
+  pool.query(query, [req.params.id], (err, result) => {
+    if (err) {
+      console.error('Error: ', err);
+      return res.status(500).json({ error: 'Erro ao deletar o usuário.' });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Usuário não encontrado.' });
+    }
+
+    res.json({ message: 'Usuário deletado com sucesso!', id_usuario: req.params.id });
+  });
+});
 
